@@ -10,14 +10,29 @@ public class Solver {
     private int maxRegionSize;
 
     public Solver(ColorBoard colorBoard) {
+        allocateMemory(colorBoard);
+        initialize();
+    }
+
+    private void allocateMemory(ColorBoard colorBoard) {
         this.colorBoard = colorBoard;
         int k = colorBoard.getColums() * colorBoard.getRows();
         nodeId = new int[colorBoard.getColums()][colorBoard.getRows()];
         rootNode = new int[k];
         areaSize = new int[k];
         maxRegionSize = 1;
+    }
 
-        initialize();
+    private void initialize() {
+        int i = 0;
+        for (int x = 0; x < colorBoard.getColums(); x++) {
+            for (int y = 0; y < colorBoard.getRows(); y++) {
+                nodeId[x][y] = i;
+                rootNode[i] = i;
+                areaSize[i] = 1;
+                i++;
+            }
+        }
     }
 
     public int findLargestRegion() {
@@ -40,7 +55,7 @@ public class Solver {
 
                     if (currentNodeColor == topNodeColor) {
                         // link root node of currentNode to root node of topNode
-                        relinkRootNodes(currentNode, topNode);
+                        relinkRootNode(currentNode, topNode);
                     } else {
                         // nothing to do
                     }
@@ -53,7 +68,7 @@ public class Solver {
 
                     if (currentNodeColor == leftNodeColor) {
                         // link root node of currentNode to root node of leftNode
-                        relinkRootNodes(currentNode, leftNode);
+                        relinkRootNode(currentNode, leftNode);
                     } else {
                         // nothing to do
                     }
@@ -73,25 +88,25 @@ public class Solver {
 
                     if (currentNodeColor != leftNodeColor && currentNodeColor == topNodeColor) {
                         // Fall 2
-                        relinkRootNodes(currentNode, topNode);
+                        relinkRootNode(currentNode, topNode);
                     }
 
                     if (currentNodeColor == leftNodeColor && currentNodeColor != topNodeColor) {
                         // Fall 3
-                        relinkRootNodes(currentNode, leftNode);
+                        relinkRootNode(currentNode, leftNode);
                     }
 
                     if (currentNodeColor == leftNodeColor && currentNodeColor == topNodeColor) {
                         // Fall 4
 
-                        int leftNodeRoot = getRootNode(leftNode);
-                        int topNodeRoot = getRootNode(topNode);
+                        int rootNodeOfLeftNode = getRootNode(leftNode);
+                        int rootNodeOfTopNode = getRootNode(topNode);
 
-                        if (leftNodeRoot == topNodeRoot) {
-                            relinkRootNodes(currentNode, leftNode);
+                        if (rootNodeOfLeftNode == rootNodeOfTopNode) {
+                            relinkRootNode(currentNode, leftNode);
                         } else {
-                            relinkRootNodes(leftNode, currentNode);
-                            relinkRootNodes(topNode, currentNode);
+                            relinkRootNode(leftNode, currentNode);
+                            relinkRootNode(topNode, currentNode);
                         }
                     }
                 }
@@ -101,28 +116,17 @@ public class Solver {
         return maxRegionSize;
     }
 
-    private void relinkRootNodes(int nodeA, int nodeB) {
-        int rootNodeA = getRootNode(nodeA);
-        int rootNodeB = getRootNode(nodeB);
+    private void relinkRootNode(int nodeToRelink, int sourceNode) {
+        int rootNodeOfNodeToRelink = getRootNode(nodeToRelink);
+        int rootNodeOfSourceNode = getRootNode(sourceNode);
 
-        rootNode[rootNodeA] = rootNodeB;
-        areaSize[rootNodeB] += areaSize[rootNodeA];
+        rootNode[rootNodeOfNodeToRelink] = rootNodeOfSourceNode;
+        areaSize[rootNodeOfSourceNode] += areaSize[rootNodeOfNodeToRelink];
 
-        if (areaSize[rootNodeB] > maxRegionSize) {
-            maxRegionSize = areaSize[rootNodeB];
+        if (areaSize[rootNodeOfSourceNode] > maxRegionSize) {
+            maxRegionSize = areaSize[rootNodeOfSourceNode];
         }
-    }
 
-    private void initialize() {
-        int i = 0;
-        for (int x = 0; x < colorBoard.getColums(); x++) {
-            for (int y = 0; y < colorBoard.getRows(); y++) {
-                nodeId[x][y] = i;
-                rootNode[i] = i;
-                areaSize[i] = 1;
-                i++;
-            }
-        }
     }
 
     private int getRootNode(int node) {

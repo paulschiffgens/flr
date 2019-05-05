@@ -8,6 +8,9 @@
 .idea/**/dictionaries
 .idea/**/shelf
 
+build/
+.gradle/
+
 # Generated files
 .idea/**/contentModel.xml
 
